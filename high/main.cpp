@@ -125,7 +125,7 @@ void game(string bor, string main_hero_left, string main_hero_right, string pole
         polje[start_row][col] = hero;
 
         // printw("col: %d, direction: %d\n", col, direction);
-        printw("Score: %d\n", floor);
+        printw("Score: %d. Total record: %d\n", floor, score);
         if (floor % 10 == 0 && floor > score) {
             printw("(#####  %d. New record! #####)", floor);
         } else if (floor % 10 == 0) {
@@ -191,16 +191,24 @@ void settings(string& main_hero_left ,string& main_hero_right, string& bor, stri
             printw("Press the char on keyboard");
             pole = getch();
         } else if (ch == 10 && picked == 3) {
-            attron(COLOR_PAIR(2));
-            printw("Reset completed!");
-            attroff(COLOR_PAIR(2));
+            if (main_hero_left == "<" && main_hero_right == ">" && bor == "|" && pole == " "){
+                attron(COLOR_PAIR(4));
+                printw("Already reseted!");
+                attroff(COLOR_PAIR(4));
+                int d = getch();
+            } else {
+                attron(COLOR_PAIR(1));
+                printw("Reset completed!");
+                attroff(COLOR_PAIR(1));
 
-            int d = getch();
+                int d = getch();
 
-            main_hero_left = "<";
-            main_hero_left = ">";
-            bor = "|";
-            pole = " ";
+                main_hero_left = "<";
+                main_hero_right = ">";
+                bor = "|";
+                pole = " ";
+            }
+            
         } else if (ch == 10 && picked == 4) {
             break;
         }
@@ -281,6 +289,8 @@ int main() {
     init_pair(2, COLOR_BLACK, COLOR_CYAN);
 
     init_pair(3, COLOR_WHITE, COLOR_BLACK);
+
+    init_pair(4, COLOR_RED, COLOR_BLACK);
 
     menu();
 }
