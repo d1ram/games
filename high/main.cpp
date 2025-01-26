@@ -4,26 +4,20 @@
 #include <random>
 using namespace std;
 
-void make_border(vector<int>& borders, vector<int>& side) {
+void make_border(vector<int>& side) {
     random_device rd;
     mt19937 rng(rd());
+    uniform_int_distribution<int> dis(0, 2);
+    int s = dis(rng);
 
-    uniform_int_distribution<int> dis2(0, 2);
-    int s = dis2(rng);
-
-    borders.insert(borders.begin(), k);
     side.insert(side.begin(), s);
 }
-void make_border_game(vector<int>& borders, vector<int>& side) {
+void make_border_game(vector<int>& side) {
     random_device rd;
     mt19937 rng(rd());
-    uniform_int_distribution<int> dis(0, 1);
-    int k = dis(rng);
-    uniform_int_distribution<int> dis2(0, 2);
-    int s = dis2(rng);
+    uniform_int_distribution<int> dis(0, 2);
+    int s = dis(rng);
 
-    borders.insert(borders.begin(), k); 
-    borders.pop_back();    
     side.insert(side.begin(), s); 
     side.pop_back();    
 }
@@ -35,6 +29,7 @@ int main() {
     
     string bor = "I";
     string main_hero = "X";
+    string pole = " ";
 
     initscr();
     cbreak();
@@ -45,33 +40,27 @@ int main() {
     int direction = 2;
     int col = 1;
 
-    vector<int> borders;
     vector<int> side;
 
     vector<vector<string>> polje(rows, vector<string>(columns, "."));
 
     for (int i = 0; i < rows; i++) {
-        make_border(borders, side);
+        make_border(side);
     }
-    borders[start_row] = 1;
     side[start_row] = 2;
 
-    int floor = 11;
+    int floor = 0;
 
     bool has_border_left;
     bool has_border_right;
     bool has_two_borders;
 
-    int in_a_row = 0;
     int left_side = 0;
     int right_side = 0;
      
     // direction(1) == left, direction(2) == right;
     while (true) {
         int ch;
-        has_border_left = false;
-        has_border_right = false;
-        has_two_borders = false;
 
         napms(100);
 
@@ -79,8 +68,11 @@ int main() {
 
         ch = getch();
 
+        main_hero = "o";
         if (ch == 'w') {
-            make_border_game(borders, side);
+            make_border_game(side);
+            main_hero = "O";
+            floor++;
         }
 
         for (int i = 0; i < rows; i++) { // print polje
@@ -91,55 +83,28 @@ int main() {
         }
         for (int i = 0; i < rows; i++) { // whole polje
             for (int j = 0; j < columns; j++) {
-                polje[i][j] = ".";
+                polje[i][j] = pole;
             }
         }
 
-        in_a_row = 0;
-        left_side = 0;
-        right_side = 0;
         for (int i = 0; i < rows; i++) { // borders
-            if (in_a_row == 1) {
-                borders[i] = 1;
-                if (side[i] == 0) {
-                    polje[i][0] = bor;
-                    left_side++;
-                    right_side = 0;
-                } else {
-                    polje[i][columns - 1] = bor;
-                    right_side++;
-                    left_side = 0;
-                }
-                in_a_row = 0;
-            } else if (borders[i] == 1) {
-                if (left_side == 2 || right_side == 2) {
-                    if (left_side == 2) {
-                        side[i] = 1;
-                        left_side = 0;
-                        continue;
-                    } else if (right_side == 2) {
-                        side[i] = 0;
-                        right_side = 0;
-                        continue;
-                    }
-                }
-                if (side[i] == 0) {
-                    polje[i][0] = bor;
-                    left_side++;
-                } else if (side[i] == 1){
-                    polje[i][columns - 1] = bor;
-                    right_side++;
-                } else {
-                    polje[i][0] = bor;
-                    polje[i][columns - 1] = bor;
-                    right_side = 0;
-                    left_side = 0;
-                }
-                in_a_row = 0;
-            } else if (borders[i] == 0) {
-                in_a_row++;
+            if (side[i] == 0) {
+                polje[i][0] = bor;
+                left_side++;
+            } else if (side[i] == 1){
+                polje[i][columns - 1] = bor;
+                right_side++;
+            } else if (side[i] == 2){
+                polje[i][0] = bor;
+                polje[i][columns - 1] = bor;
+                right_side = 0;
+                left_side = 0;
             }
         }
+
+        has_border_left = false;
+        has_border_right = false;
+        has_two_borders = false;
 
         if (polje[start_row][0] == bor && !(polje[start_row][columns - 1] == bor)) {
             has_border_left = true;
@@ -167,7 +132,11 @@ int main() {
 
         polje[start_row][col] = main_hero; 
 
-        printw("col: %d, direction: %d\n", col, direction);
+        // printw("col: %d, direction: %d\n", col, direction);
+        printw("Score: %d\n", floor);
+        if (floor % 10 == 0) {
+            printw("(#####  %d  #####)", floor);
+        }
 
         refresh(); 
     }
