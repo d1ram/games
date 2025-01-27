@@ -30,7 +30,7 @@ void game(string bor, string main_hero_left, string main_hero_right, string pole
     int start_row = 10;
 
     int direction = 2;
-    int col = 1;
+    int col = columns / 2; // Позиция персонажа по центру
     vector<int> side;
 
     vector<vector<string>> polje(rows, vector<string>(columns, "."));
@@ -47,11 +47,13 @@ void game(string bor, string main_hero_left, string main_hero_right, string pole
     bool has_border_right;
     bool has_two_borders;
 
-    int left_side = 0;
-    int right_side = 0;
-
     bkgd(COLOR_PAIR(2));
-    // direction(1) == left, direction(2) == right;
+    attron(A_BOLD);
+
+    // Получаем центр экрана
+    int center_row = LINES / 2 - rows / 2; // Центрируем по вертикали
+    int center_col = COLS / 2 - columns / 2; // Центрируем по горизонтали
+
     while (true) {
         int ch;
 
@@ -68,10 +70,12 @@ void game(string bor, string main_hero_left, string main_hero_right, string pole
 
         for (int i = 0; i < rows; i++) { // print polje
             for (int j = 0; j < columns; j++) {
-                printw("%s ", polje[i][j].c_str());  
+                mvprintw(center_row + i, center_col + j * 2, "%s ", polje[i][j].c_str());  
             }
             printw("\n"); 
         }
+
+        // Обновление полей
         for (int i = 0; i < rows; i++) { // whole polje
             for (int j = 0; j < columns; j++) {
                 polje[i][j] = pole;
@@ -80,15 +84,11 @@ void game(string bor, string main_hero_left, string main_hero_right, string pole
         for (int i = 0; i < rows; i++) { // borders
             if (side[i] == 0) {
                 polje[i][0] = bor;
-                left_side++;
             } else if (side[i] == 1){
                 polje[i][columns - 1] = bor;
-                right_side++;
             } else if (side[i] == 2){
                 polje[i][0] = bor;
                 polje[i][columns - 1] = bor;
-                right_side = 0;
-                left_side = 0;
             }
         }
 
@@ -125,11 +125,11 @@ void game(string bor, string main_hero_left, string main_hero_right, string pole
         polje[start_row][col] = hero;
 
         // printw("col: %d, direction: %d\n", col, direction);
-        printw("Score: %d. Total record: %d\n", floor, score);
+        mvprintw(center_row + rows, center_col, "Score: %d. Total record: %d\n", floor, score);
         if (floor % 10 == 0 && floor > score) {
-            printw("(#####  %d. New record! #####)", floor);
+            mvprintw(center_row + rows + 1, center_col, "(#####  %d. New record! #####)", floor);
         } else if (floor % 10 == 0) {
-            printw("(#####  %d  #####)", floor);
+            mvprintw(center_row + rows + 1, center_col, "(#####  %d  #####)", floor);
         }
         refresh(); 
     }
@@ -137,9 +137,11 @@ void game(string bor, string main_hero_left, string main_hero_right, string pole
         score = floor;
     }
     attroff(COLOR_PAIR(4));
+    attroff(A_BOLD);
     nodelay(stdscr, FALSE);
     keypad(stdscr, FALSE);
 }
+
 void settings(string& main_hero_left ,string& main_hero_right, string& bor, string& pole) {
     string main_text = "Change character skin";
     string border_text = "Change border skin";
@@ -220,6 +222,15 @@ void settings(string& main_hero_left ,string& main_hero_right, string& bor, stri
         exit_text = "Back to menu";
     }
 }
+void print_3d_text(int row, int col, const char* text, int num) {
+    attron(COLOR_PAIR(2));
+    attron(A_BOLD);
+    for (int i = 0; i < num; i++) {
+        mvprintw(row + i, col + i, text);
+    }
+    attroff(COLOR_PAIR(2));
+    attroff(A_BOLD);
+}
 void menu() {
     string game_text = "Game";
     string settings_text = "Settings";
@@ -254,6 +265,7 @@ void menu() {
         printw("%s\n", settings_text.c_str());
         printw("%s\n", exit_text.c_str());
         printw("Record: %d\n", score);
+        print_3d_text(0, 25, "HIGH RISERS", 24);
 
         int ch = getch();
 
